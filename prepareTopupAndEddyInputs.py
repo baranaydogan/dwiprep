@@ -6,7 +6,7 @@ Created on Wed Dec  5 13:29:08 2018
 @author: baran
 """
 
-def run_prepareTopupAndEddyInputs(prepEnv,outPath,name_base,name_b0s,name_dwi,doTopup):
+def run_prepareTopupAndEddyInputs(prepEnv,outPath,name_base,name_b0s,name_dwi,fsldir, doTopup):
     
     import os
     import sys
@@ -168,7 +168,7 @@ def run_prepareTopupAndEddyInputs(prepEnv,outPath,name_base,name_b0s,name_dwi,do
     if (doTopup==False) :    topupScript.write('#SBATCH --mem-per-cpu=4G \n');
 
     topupScript.write('\n');
-    topupScript.write('module load fsl/6.0.3\n');
+    topupScript.write('module load '+fsldir+' \n');
     topupScript.write('source $FSLDIR/etc/fslconf/fsl.sh\n');
     topupScript.write('\n');
     topupScript.write('\nderPath=' + outPath);
@@ -238,7 +238,7 @@ def run_prepareTopupAndEddyInputs(prepEnv,outPath,name_base,name_b0s,name_dwi,do
     else:
        nifti_extract_a_b0((outPath+'/Step2_topupAndEddyInputs/combined_dwi.nii.gz'),(outPath+'/Step2_topupAndEddyInputs/combined_dwi'),(outPath + '/Step3_topupOutput/hifib0'),50)
     
-    topupScript.write('bet $hifib0 ${nodif_brain} -m -f 0.1');
+    topupScript.write('bet $hifib0 ${nodif_brain} -m -R -f 0.1'); #R flag removes neck
     topupScript.write('\n');
     topupScript.write('\n');
     topupScript.write('\n');
@@ -279,7 +279,7 @@ def run_prepareTopupAndEddyInputs(prepEnv,outPath,name_base,name_b0s,name_dwi,do
     # eddyScript.write('module load OpenBLAS\n');
     # eddyScript.write('module load CUDA/8.0.61\n');
     eddyScript.write('\n');
-    eddyScript.write('module load fsl/6.0.3\n');
+    eddyScript.write('module load '+fsldir+'\n');
     eddyScript.write('source $FSLDIR/etc/fslconf/fsl.sh\n');
     eddyScript.write('\n');
     eddyScript.write('\n');

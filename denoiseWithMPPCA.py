@@ -8,7 +8,7 @@ Created on Wed Dec  5 09:32:15 2018
 
 # Denoise dwi data with MPPCA
 # mrtrix3's dwidenoise command is used for this
-def run_denoiseWithMPPCA(prepEnv, mrtrix_dwinoise_extent,inp,basenameOut,basenameInp,report):
+def run_denoiseWithMPPCA(prepEnv, mrtrix_dwinoise_extent,inp,basenameOut,basenameInp,mrtrix,report):
     
     import sys
     import json
@@ -44,7 +44,7 @@ def run_denoiseWithMPPCA(prepEnv, mrtrix_dwinoise_extent,inp,basenameOut,basenam
     report.write('"-extent": "' + mrtrix_dwinoise_extent +'"');
     report.write('\n}');
     
-    subprocess.call(['sbatch', '--wait', 'run_slurm_MPPCA.sh',inp,basenameOut,mrtrix_dwinoise_extent], env=prepEnv);
+    subprocess.call(['sbatch', '--wait', 'run_slurm_MPPCA.sh',inp,basenameOut,mrtrix_dwinoise_extent, mrtrix], env=prepEnv);
     
     # subprocess.call(['dwidenoise', \
     #                  inp, \

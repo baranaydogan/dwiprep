@@ -36,8 +36,8 @@ def nifti_subtract(A,B,out):
     A       = nib.load(A);
     B       = nib.load(B);
     
-    img_A   = np.squeeze(A.get_data());
-    img_B   = np.squeeze(B.get_data());
+    img_A   = np.squeeze(A.get_fdata());
+    img_B   = np.squeeze(B.get_fdata());
     
     diff    = img_A - img_B;
     
@@ -74,7 +74,7 @@ def nifti_extractB0s(out,basenameInp,basenameOut,b0_threshold,report):
     nii  = nib.load(out);
     bval = np.loadtxt((basenameInp + '.bval'));
     
-    img  = nii.get_data();
+    img  = nii.get_fdata();
     
     img_b0 = img[:,:,:,bval<b0_threshold];
     ave_b0 = np.mean(np.mean(np.mean(img_b0,axis=0),axis=0),axis=0);
@@ -135,7 +135,7 @@ def nifti_extract_a_b0(out,basenameInp,basenameOut,b0_threshold):
     nii  = nib.load(out);
     bval = np.loadtxt((basenameInp + '.bval'));
     
-    img  = nii.get_data();
+    img  = nii.get_fdata();
     
     img_b0 = img[:,:,:,np.argmax(bval<b0_threshold)];
     
@@ -167,7 +167,7 @@ def nifti_concatenateImages(out,imageList):
     import numpy as np
 
     nii  = nib.load(imageList[0]);
-    img  = nii.get_data();
+    img  = nii.get_fdata();
     
 #    if (img.ndim<4):
 #        img = np.expand_dims(img,axis=4);
@@ -176,7 +176,7 @@ def nifti_concatenateImages(out,imageList):
     nv[0]= img.shape[3];
     
     for i in range(1,len(imageList)):
-        tmp     = nib.load(imageList[i]).get_data();
+        tmp     = nib.load(imageList[i]).get_fdata();
         nv[i]   = tmp.shape[3];
         img     = np.concatenate((img,tmp),axis=3);
         
@@ -195,7 +195,7 @@ def nifti_extractVolumes(out,inp,indices):
     import nibabel as nib    
 
     nii  = nib.load(inp);
-    img  = nii.get_data();
+    img  = nii.get_fdata();
     
     img  = img[:,:,:,indices];
         
@@ -218,12 +218,12 @@ def nifti_concatenateDwi(out,dwiList):
         
     # Merge dwi data
     nii  = nib.load(dwiList[0]);
-    img  = nii.get_data();
+    img  = nii.get_fdata(); # forces the data into floating point
     if (len(img.shape)==3):
         img = np.expand_dims(img,3);
     
     for i in range(1,len(dwiList)):
-        tmp     = nib.load(dwiList[i]).get_data();
+        tmp     = nib.load(dwiList[i]).get_fdata();
         if (len(tmp.shape)==3):
             tmp = np.expand_dims(tmp,3);
         img     = np.concatenate((img,tmp),axis=3);

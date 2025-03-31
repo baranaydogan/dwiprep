@@ -15,17 +15,17 @@ def main():
     from verifyInput import run_verifyInput
     from parseInput import run_parseInput,run_mergePhaseEncodedDwi
     from synb0Functions import synb0ifneeded
-    from denoiseWithMPPCA import run_denoiseWithMPPCA    
+    from denoiseWithMPPCA import run_denoiseWithMPPCA   
 
     inpDir 	= sys.argv[1];
     T1path      = sys.argv[2];
     outDir 	= sys.argv[3];
     
     # SET THESE PATHS
-    fsldir      = os.environ['FSLDIR'];
-    mrtrix      = '/scratch/work/aydogad1/tools/build/mrtrix3/bin';
-    synb0       = '/scratch/work/aydogad1/tools/barans/Synb0-DISCO_scripts';
-    dwiprep     = '/scratch/work/aydogad1/tools/barans/dwiprep';             # Path to this script 
+    fsldir      = '/appl/manual_installations/software/fsl/6.0.7.7' ;                                     # in FSL_6.0.7.17 env
+    mrtrix      = '/scratch/nbe/istim/Simona/code/NeuroEnv/bin';          # in NeuroEnv env
+    synb0       = '/scratch/work/aydogad1/tools/barans/Synb0-DISCO_scripts'; # don't have access atm
+    dwiprep     = '/scratch/nbe/istim/Simona/code/dwiprep';             # Path to this script 
     
     if not os.path.exists(outDir): os.makedirs(outDir)
     if not os.path.exists(outDir + '/Step0_parsedInputImages'): os.mkdir(outDir + '/Step0_parsedInputImages')
@@ -36,6 +36,7 @@ def main():
     if not os.path.exists(outDir + '/Step5_preprocessedDMRI'): os.mkdir(outDir + '/Step5_preprocessedDMRI')
     if not os.path.exists(outDir + '/Step6_microstructureAnalysis'): os.mkdir(outDir + '/Step6_microstructureAnalysis')
     if not os.path.exists(outDir + '/Step7_registerDMRI2T1'): os.mkdir(outDir + '/Step7_registerDMRI2T1')
+    if not os.path.exists(dwiprep + '/SlurmFiles'): os.mkdir(dwiprep + '/SlurmFiles')
 
     report      = open((outDir + '/dwiprep_report.json'),'w');
     report.write('{\n');
@@ -44,8 +45,10 @@ def main():
       
     prepEnv                     = os.environ.copy();
     prepEnv["PATH"]             = mrtrix + ":" + fsldir + ":" + synb0 + ":" + dwiprep + ":" + prepEnv["PATH"];
-    
-    
+
+    # Making sure the appropriate FSL configuration file is sourced by your shell (e.g. by putting it in .profile).
+    #."${fsldir}/etc/fslconf/fsl.sh"
+
     # Step1 - Prepare for topup and eddy
     
     # Verify and parse input
@@ -135,7 +138,7 @@ def main():
 
         report.write('\n"denoise with MPPCA": "true"');
         report.write(',\n"MPPCA info": { \n');
-        denoiseResult=run_denoiseWithMPPCA(prepEnv, '5,5,5',out,basenameOut,basenameInp,report);
+        denoiseResult=run_denoiseWithMPPCA(prepEnv, '5,5,5',out,basenameOut,basenameInp,mrtrix,report);
         report.write('\n}');
         if (denoiseResult==True):
             out=(basenameOut + '_dwidenoise.nii.gz');
@@ -150,7 +153,7 @@ def main():
 
     # Step2 - Apply topup and eddy
     from prepareTopupAndEddyInputs import run_prepareTopupAndEddyInputs
-    run_prepareTopupAndEddyInputs(prepEnv,outDir,name_base,name_b0s,name_dwi,True);
+    run_prepareTopupAndEddyInputs(prepEnv,outDir,name_base,name_b0s,name_dwi,fsldir,True);
     
     subprocess.call(['sbatch', '--wait', (outDir + '/Step2_topupAndEddyInputs/run_topup.sh')], env=prepEnv);
     subprocess.call(['sbatch', '--wait', (outDir + '/Step2_topupAndEddyInputs/run_eddy.sh')],  env=prepEnv);
