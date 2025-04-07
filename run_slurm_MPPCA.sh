@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=12
-#SBATCH --time=45
+#SBATCH --time=20
 #SBATCH --output SlurmFiles/Denoising_output_%A.txt
 #SBATCH --error SlurmFiles/Denoising_error_%A.txt
 

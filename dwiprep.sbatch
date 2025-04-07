@@ -4,7 +4,6 @@
 #SBATCH --output SlurmFiles/Preprocessing_output_%A_%a.txt
 #SBATCH --error SlurmFiles/Preprocessing_error_%A_%a.txt
 #SBATCH --nodes=1               # Request one node
-##SBATCH --cpus-per-task=20
 #SBATCH --array=0 #-115
 
 module load fsl/6.0.7.11

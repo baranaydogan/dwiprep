@@ -176,8 +176,8 @@ def extract_overlaps(bvals1, bvecs1, bvals2, bvecs2, overlap1, overlap2):
         log('Data set 1 session {0} offset: {1}'.format(session + 1, offset1))
         log('Data set 2 session {0} offset: {1}'.format(session + 1, offset2))
 
-        bv1_indices = np.arange(offset1, offset1 + overlaps, dtype=np.int)
-        bv2_indices = np.arange(offset2, offset2 + overlaps, dtype=np.int)
+        bv1_indices = np.arange(offset1, offset1 + overlaps, dtype=int)
+        bv2_indices = np.arange(offset2, offset2 + overlaps, dtype=int)
 
         session_bvals1     .append(bvals1[   bv1_indices])
         session_bvals2     .append(bvals2[   bv2_indices])

@@ -157,6 +157,7 @@ def main():
     run_prepareTopupAndEddyInputs(prepEnv,outDir,name_base,name_b0s,name_dwi,fsldir,dwiprep+'/average_bvecs.py', True);
     
     subprocess.call(['sbatch', '--wait', (outDir + '/Step2_topupAndEddyInputs/run_topup.sh')], env=prepEnv);
+    
     subprocess.call(['sbatch', '--wait', (outDir + '/Step2_topupAndEddyInputs/run_eddy.sh')],  env=prepEnv);
     
     subprocess.call(['sbatch', '--wait', 'run_slurm_upsample.sh',outDir, mrtrix ],  env=prepEnv);

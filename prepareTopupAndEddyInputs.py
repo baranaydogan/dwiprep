@@ -161,7 +161,7 @@ def run_prepareTopupAndEddyInputs(prepEnv,outPath,name_base,name_b0s,name_dwi,fs
     topupScript.write('#!/bin/bash \n');
     if (doTopup==True) :     topupScript.write('#SBATCH -N 1\n');
     if (doTopup==True) :     topupScript.write('#SBATCH --time=600 \n');
-    if (doTopup==True) :     topupScript.write('#SBATCH --mem-per-cpu=16G \n');
+    if (doTopup==True) :     topupScript.write('#SBATCH --mem-per-cpu=2G \n');
     if (doTopup==True) :     topupScript.write('#SBATCH --error SlurmFiles/Topup_error_%A.txt \n');
     if (doTopup==True) :     topupScript.write('#SBATCH --output  SlurmFiles/Topup_output_%A.txt \n');
 
@@ -259,15 +259,17 @@ def run_prepareTopupAndEddyInputs(prepEnv,outPath,name_base,name_b0s,name_dwi,fs
     sys.stdout.write('Compiling run_eddy.sh script\n');
     eddyScript   = open((outPath + '/Step2_topupAndEddyInputs/run_eddy.sh'),'w');
     eddyScript.write('#!/bin/bash \n');
-    eddyScript.write('#SBATCH --cpus-per-task=48 \n');
-    eddyScript.write('#SBATCH --time=300 \n');
+    eddyScript.write('#SBATCH --gpus=1 \n');
+    eddyScript.write('#SBATCH --partition=gpu-v100-16g \n');
+    eddyScript.write('#SBATCH --cpus-per-task=12 \n');
+    eddyScript.write('#SBATCH --time=120 \n');
     eddyScript.write('#SBATCH --error SlurmFiles/eddy_error_%A.txt \n');
     eddyScript.write('#SBATCH --output SlurmFiles/eddy_output_%A.txt \n');
-    eddyScript.write('#SBATCH --mem-per-cpu=5G \n \n \n');
+    eddyScript.write('#SBATCH --mem-per-cpu=1G \n \n \n');
     
 
     eddyScript.write('export OMP_PROC_BIND=TRUE \n');
-    eddyScript.write('export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK} \n');
+    #eddyScript.write('export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK} \n');
 
 
 #    eddyScript.write('#SBATCH --time=600 \n');
@@ -294,7 +296,7 @@ def run_prepareTopupAndEddyInputs(prepEnv,outPath,name_base,name_b0s,name_dwi,fs
     eddyScript.write('\n');
 
     if (doTopup==True):
-       eddyScript.write('eddy_cpu \\'); #DEPRECATED eddy_openmp https://neurostars.org/t/eddy-openmp-deprecated-v6-0-6/28189
+       eddyScript.write('eddy_cuda10.2 \\'); #DEPRECATED eddy_openmp https://neurostars.org/t/eddy-openmp-deprecated-v6-0-6/28189
        # eddyScript.write('eddy_cuda8.0 \\');
        eddyScript.write('\n--verbose \\');
        eddyScript.write('\n--imain=${imagePath}/combined_dwi.nii.gz \\');
@@ -307,7 +309,6 @@ def run_prepareTopupAndEddyInputs(prepEnv,outPath,name_base,name_b0s,name_dwi,fs
        eddyScript.write('\n--residuals \\');
        eddyScript.write('\n--data_is_shelled \\');
        eddyScript.write('\n--cnr_maps \\');
-       eddyScript.write('\n--nthr=${SLURM_CPUS_PER_TASK} \\');
        eddyScript.write('\n--repol \\'); # outlier replacement
        # if (slspec.size>0) : eddyScript.write('\n--ol_type=both \\'); # outlier replacement takes into account both slice groups (due to multi band imaging) and individual slices
        # if (slspec.size>0) : eddyScript.write('\n--mporder=6 \\');
@@ -409,7 +410,7 @@ def run_prepareTopupAndEddyInputs(prepEnv,outPath,name_base,name_b0s,name_dwi,fs
            eddyScript.write('\ncp ${topupOutputPath}/nodif_brain_mask_dilated.nii.gz ${eddyOutputPath}/prepped_dMRI_mask.nii.gz');
            
     else:
-       eddyScript.write('eddy_cpu \\');
+       eddyScript.write('eddy_cuda10.2 \\');
        eddyScript.write('\n--verbose \\');
        eddyScript.write('\n--imain=${imagePath}/combined_dwi.nii.gz \\');
        eddyScript.write('\n--mask=${topupOutputPath}/nodif_brain_mask_dilated.nii.gz \\');
@@ -422,7 +423,6 @@ def run_prepareTopupAndEddyInputs(prepEnv,outPath,name_base,name_b0s,name_dwi,fs
        eddyScript.write('\n--cnr_maps \\');
        eddyScript.write('\n--repol \\'); # outlier replacement
        eddyScript.write('\n--dont_peas \\'); # Do not end with an alignment of shells to each other - USE THIS
-       eddyScript.write('\n--nthr=${SLURM_CPUS_PER_TASK} \\');
        eddyScript.write('\n--out=${eddyOutputPath}/eddyResult '); # Do not end with an alignment of shells to each other - USE THIS
        eddyScript.write('\n');
        eddyScript.write('\n');
