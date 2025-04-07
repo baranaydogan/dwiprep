@@ -2,13 +2,14 @@
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=12
 #SBATCH --time=45
-#SBATCH -o /dev/null
+#SBATCH -o SlurmFiles/upsample_output_%A.txt
+#SBATCH -e SlurmFiles/upsample_error_%A.txtx
 
 set -euo pipefail
 
 outdir=$1
 
-mrtrix=/scratch/work/aydogad1/tools/build/mrtrix3/bin
+mrtrix= $2#/scratch/work/aydogad1/tools/build/mrtrix3/bin
 
 cp ${outdir}/Step4_eddyOutput/prepped_dMRI.bval ${outdir}/Step5_preprocessedDMRI/dMRI.bval
 cp ${outdir}/Step4_eddyOutput/prepped_dMRI.bvec ${outdir}/Step5_preprocessedDMRI/dMRI.bvec

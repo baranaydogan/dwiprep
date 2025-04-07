@@ -4,7 +4,6 @@
 #SBATCH --time=45
 #SBATCH --output SlurmFiles/Denoising_output_%A.txt
 #SBATCH --error SlurmFiles/Denoising_error_%A.txt
-##SBATCH -o /dev/null
 
 set -euo pipefail
 
