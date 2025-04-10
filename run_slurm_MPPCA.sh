@@ -2,6 +2,7 @@
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=12
 #SBATCH --time=20
+#sbatch --mem=4G
 #SBATCH --output SlurmFiles/Denoising_output_%A.txt
 #SBATCH --error SlurmFiles/Denoising_error_%A.txt
 

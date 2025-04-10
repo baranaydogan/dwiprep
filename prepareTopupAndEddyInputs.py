@@ -160,7 +160,7 @@ def run_prepareTopupAndEddyInputs(prepEnv,outPath,name_base,name_b0s,name_dwi,fs
 
     topupScript.write('#!/bin/bash \n');
     if (doTopup==True) :     topupScript.write('#SBATCH -N 1\n');
-    if (doTopup==True) :     topupScript.write('#SBATCH --time=600 \n');
+    if (doTopup==True) :     topupScript.write('#SBATCH --time=120 \n');
     if (doTopup==True) :     topupScript.write('#SBATCH --mem-per-cpu=2G \n');
     if (doTopup==True) :     topupScript.write('#SBATCH --error SlurmFiles/Topup_error_%A.txt \n');
     if (doTopup==True) :     topupScript.write('#SBATCH --output  SlurmFiles/Topup_output_%A.txt \n');

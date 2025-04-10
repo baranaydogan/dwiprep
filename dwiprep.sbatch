@@ -4,7 +4,7 @@
 #SBATCH --output SlurmFiles/Preprocessing_output_%A_%a.txt
 #SBATCH --error SlurmFiles/Preprocessing_error_%A_%a.txt
 #SBATCH --nodes=1               # Request one node
-#SBATCH --array=0 #-115
+#SBATCH --array=0-114
 
 module load fsl/6.0.7.11
 source $FSLDIR/etc/fslconf/fsl.sh
