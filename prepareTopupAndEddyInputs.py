@@ -6,7 +6,7 @@ Created on Wed Dec  5 13:29:08 2018
 @author: baran
 """
 
-def run_prepareTopupAndEddyInputs(prepEnv,outPath,name_base,name_b0s,name_dwi,doTopup):
+def run_prepareTopupAndEddyInputs(prepEnv,outPath,name_base,name_b0s,name_dwi,fsldir,average_bvecs_path, doTopup):
     
     import os
     import sys
@@ -160,15 +160,20 @@ def run_prepareTopupAndEddyInputs(prepEnv,outPath,name_base,name_b0s,name_dwi,do
 
     topupScript.write('#!/bin/bash \n');
     if (doTopup==True) :     topupScript.write('#SBATCH -N 1\n');
-    if (doTopup==True) :     topupScript.write('#SBATCH --time=600 \n');
-    if (doTopup==True) :     topupScript.write('#SBATCH --mem-per-cpu=16G \n');
+    if (doTopup==True) :     topupScript.write('#SBATCH --time=120 \n');
+    if (doTopup==True) :     topupScript.write('#SBATCH --mem-per-cpu=2G \n');
+    if (doTopup==True) :     topupScript.write('#SBATCH --error SlurmFiles/Topup_error_%A.txt \n');
+    if (doTopup==True) :     topupScript.write('#SBATCH --output  SlurmFiles/Topup_output_%A.txt \n');
 
     if (doTopup==False) :    topupScript.write('#SBATCH -N 1\n');
     if (doTopup==False) :    topupScript.write('#SBATCH --time=30 \n');
     if (doTopup==False) :    topupScript.write('#SBATCH --mem-per-cpu=4G \n');
+    if (doTopup==False) :     topupScript.write('#SBATCH --error  SlurmFiles/Topup_error_%A.txt \n');
+    if (doTopup==False) :     topupScript.write('#SBATCH --output  SlurmFiles/Topup_output_%A.txt \n');
 
+    fsl_dir="fsl"+fsldir.split("fsl",1)[1]
     topupScript.write('\n');
-    topupScript.write('module load fsl/6.0.3\n');
+    topupScript.write('module load '+fsl_dir+' \n');
     topupScript.write('source $FSLDIR/etc/fslconf/fsl.sh\n');
     topupScript.write('\n');
     topupScript.write('\nderPath=' + outPath);
@@ -238,7 +243,7 @@ def run_prepareTopupAndEddyInputs(prepEnv,outPath,name_base,name_b0s,name_dwi,do
     else:
        nifti_extract_a_b0((outPath+'/Step2_topupAndEddyInputs/combined_dwi.nii.gz'),(outPath+'/Step2_topupAndEddyInputs/combined_dwi'),(outPath + '/Step3_topupOutput/hifib0'),50)
     
-    topupScript.write('bet $hifib0 ${nodif_brain} -m -f 0.1');
+    topupScript.write('bet $hifib0 ${nodif_brain} -m -R -f 0.1'); #R flag removes neck
     topupScript.write('\n');
     topupScript.write('\n');
     topupScript.write('\n');
@@ -254,11 +259,17 @@ def run_prepareTopupAndEddyInputs(prepEnv,outPath,name_base,name_b0s,name_dwi,do
     sys.stdout.write('Compiling run_eddy.sh script\n');
     eddyScript   = open((outPath + '/Step2_topupAndEddyInputs/run_eddy.sh'),'w');
     eddyScript.write('#!/bin/bash \n');
+    eddyScript.write('#SBATCH --gpus=1 \n');
+    eddyScript.write('#SBATCH --partition=gpu-v100-16g \n');
     eddyScript.write('#SBATCH --cpus-per-task=12 \n');
-    eddyScript.write('#SBATCH --time=600 \n');
-    eddyScript.write('#SBATCH --mem-per-cpu=8G \n \n \n');
+    eddyScript.write('#SBATCH --time=120 \n');
+    eddyScript.write('#SBATCH --error SlurmFiles/eddy_error_%A.txt \n');
+    eddyScript.write('#SBATCH --output SlurmFiles/eddy_output_%A.txt \n');
+    eddyScript.write('#SBATCH --mem-per-cpu=1G \n \n \n');
+    
+
     eddyScript.write('export OMP_PROC_BIND=TRUE \n');
-    eddyScript.write('export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK} \n');
+    #eddyScript.write('export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK} \n');
 
 
 #    eddyScript.write('#SBATCH --time=600 \n');
@@ -279,13 +290,13 @@ def run_prepareTopupAndEddyInputs(prepEnv,outPath,name_base,name_b0s,name_dwi,do
     # eddyScript.write('module load OpenBLAS\n');
     # eddyScript.write('module load CUDA/8.0.61\n');
     eddyScript.write('\n');
-    eddyScript.write('module load fsl/6.0.3\n');
+    eddyScript.write('module load '+fsl_dir+'\n');
     eddyScript.write('source $FSLDIR/etc/fslconf/fsl.sh\n');
     eddyScript.write('\n');
     eddyScript.write('\n');
 
     if (doTopup==True):
-       eddyScript.write('eddy_openmp \\');
+       eddyScript.write('eddy_cuda10.2 \\'); #DEPRECATED eddy_openmp https://neurostars.org/t/eddy-openmp-deprecated-v6-0-6/28189
        # eddyScript.write('eddy_cuda8.0 \\');
        eddyScript.write('\n--verbose \\');
        eddyScript.write('\n--imain=${imagePath}/combined_dwi.nii.gz \\');
@@ -360,7 +371,7 @@ def run_prepareTopupAndEddyInputs(prepEnv,outPath,name_base,name_b0s,name_dwi,do
            eddyScript.write('\n');
            eddyScript.write('\n');
            eddyScript.write('\n# Average rotated directions');
-           eddyScript.write('\naverage_bvecs=/scratch/work/aydogad1/tools/barans/dwiprep/average_bvecs.py\n');
+           eddyScript.write('\naverage_bvecs=' + average_bvecs_path);
            eddyScript.write('\n');
            eddyScript.write('\n${average_bvecs} \\');
            for i in range(len(name_base)):
@@ -399,7 +410,7 @@ def run_prepareTopupAndEddyInputs(prepEnv,outPath,name_base,name_b0s,name_dwi,do
            eddyScript.write('\ncp ${topupOutputPath}/nodif_brain_mask_dilated.nii.gz ${eddyOutputPath}/prepped_dMRI_mask.nii.gz');
            
     else:
-       eddyScript.write('eddy_openmp \\');
+       eddyScript.write('eddy_cuda10.2 \\');
        eddyScript.write('\n--verbose \\');
        eddyScript.write('\n--imain=${imagePath}/combined_dwi.nii.gz \\');
        eddyScript.write('\n--mask=${topupOutputPath}/nodif_brain_mask_dilated.nii.gz \\');
